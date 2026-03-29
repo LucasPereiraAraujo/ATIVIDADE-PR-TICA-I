@@ -1,0 +1,250 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Programa
+{
+    public static void Main(string[] args)
+    {
+        var opcao = 0;
+        var opcao_valida = true;
+
+        Dictionary<string, (string grupo, double carga, int reps)> exercicios = new Dictionary<string, (string, double, int)>();
+
+        do
+        {
+            Console.WriteLine("---------------MENU---------------");
+            Console.WriteLine("1 - Adicionar exercicio");
+            Console.WriteLine("2 - Listar exercicios");
+            Console.WriteLine("3 - Buscar exercicio por nome");
+            Console.WriteLine("4 - Filtrar por grupo muscular");
+            Console.WriteLine("5 - Calcular carga total do treino");
+            Console.WriteLine("6 - Exibir exercicio mais pesado");
+            Console.WriteLine("7 - Remover exercicio");
+            Console.WriteLine("0 - Sair");
+
+            Console.Write("Sua escolha: ");
+
+            opcao_valida = int.TryParse(Console.ReadLine(), out opcao);
+
+            if (opcao_valida == false)
+            {
+                opcao = -1;
+            }
+
+            switch (opcao)
+            {
+                case 1:
+                    Adicionar_exer(exercicios);
+                    break;
+
+                case 2:
+                    Listar_exer(exercicios);
+                    break;
+
+                case 3:
+                    Buscar_exer(exercicios);
+                    break;
+
+                case 4:
+                    Filtrar_exer(exercicios);
+                    break;
+
+                case 5:
+                    Calcula_exer(exercicios);
+                    break;
+
+                case 6:
+                    Maior_exer(exercicios);
+                    break;
+
+                case 7:
+                    Excluir_exer(exercicios);
+                    break;
+
+                default:
+                    Console.WriteLine("Opcao de escolha invalida, tente novamente");
+                    break;
+            }
+
+        } while (opcao != 0);
+    }
+
+    public static void Adicionar_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        bool sucesso;
+        string nome;
+        double carga;
+        int reps;
+        string grupo;
+
+        do
+        {
+            Console.Write("Escreva o nome do exericios: ");
+            nome = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                Console.Write("O nome do exercicio nao pode ser nulo");
+            }
+        } while (string.IsNullOrWhiteSpace(nome));
+
+        Console.Write("Escreva o grupo muscular do exericios: ");
+        grupo = Console.ReadLine();
+
+        do
+        {
+            Console.Write("Escreva a carga (em kg) do exericios: ");
+            sucesso = double.TryParse(Console.ReadLine(), out carga);
+
+            if (carga <= 0)
+            {
+                Console.WriteLine("A carga precisa ser maior que 0");
+            }
+        } while (carga <= 0 || sucesso == false);
+
+        do
+        {
+            Console.Write("Digite a quantidade de repiticoes: ");
+            sucesso = int.TryParse(Console.ReadLine(), out reps);
+            if (reps <= 0)
+            {
+                Console.WriteLine("A qtd de reps precisa ser pelo menos 1");
+            }
+        } while (reps < 1 || sucesso == false);
+
+        exercicios[nome] = (grupo, carga, reps);
+    }
+
+    public static void Listar_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        int i = 1;
+        foreach (var exer in exercicios)
+        {
+            Console.WriteLine("Exercicio nº" + i + " : " + exer.Key + " - " + exer.Value.grupo + " - " + exer.Value.carga + "kg - " + exer.Value.reps);
+            i++;
+        }
+    }
+
+    public static void Buscar_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        Console.Write("Qual o nome do exercicio a ser buscado: ");
+        string busca = Console.ReadLine();
+
+        if (!exercicios.ContainsKey(busca))
+        {
+            Console.WriteLine("Exercício não encontrado.");
+        }
+        else
+        {
+            var exer = exercicios[busca];
+            Console.WriteLine(busca + " - " + exer.grupo + " - " + exer.carga + "kg - " + exer.reps);
+        }
+    }
+
+    public static void Filtrar_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        bool encontrado = false;
+
+        Console.Write("Qual o grupo muscular a ser buscado: ");
+        string busca = Console.ReadLine();
+
+        int i = 1;
+        foreach (var exer in exercicios)
+        {
+            if (exer.Value.grupo == busca)
+            {
+                Console.WriteLine("Exercicio nº" + i + " : " + exer.Key + " - " + exer.Value.grupo + " - " + exer.Value.carga + "kg - " + exer.Value.reps);
+                encontrado = true;
+            }
+            i++;
+        }
+
+        if (encontrado == false)
+        {
+            Console.WriteLine("Nenhum exercio para este grupo");
+        }
+    }
+
+    public static void Calcula_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        double soma = exercicios.Values.Sum(e => e.carga);
+
+        Console.WriteLine("Total de carga no treino: " + soma);
+    }
+
+    public static void Maior_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        double maior = exercicios.Values.Max(e => e.carga);
+
+        foreach (var exer in exercicios)
+        {
+            if (exer.Value.carga == maior)
+            {
+                Console.WriteLine("O exercicio com maior carga e: " + exer.Key + " com " + exer.Value.carga + "kg");
+            }
+        }
+    }
+
+    public static void Excluir_exer(Dictionary<string, (string grupo, double carga, int reps)> exercicios)
+    {
+        if (exercicios.Count == 0)
+        {
+            Console.WriteLine("Nenhum exercício cadastrado");
+            return;
+        }
+
+        string nome;
+        double carga;
+        int reps;
+        string grupo;
+
+        Console.Write("Qual o nome do exercicio a ser excluido: ");
+        string busca = Console.ReadLine();
+
+        if (!exercicios.ContainsKey(busca))
+        {
+            Console.WriteLine("Exercício não encontrado.");
+        }
+        else
+        {
+            nome = busca;
+            grupo = exercicios[busca].grupo;
+            carga = exercicios[busca].carga;
+            reps = exercicios[busca].reps;
+
+            exercicios.Remove(busca);
+
+            Console.WriteLine("O exercicios foi excluido. Os dados excluidos foram: " + "Exercicio: " + nome + " - " + grupo + " - " + carga + "kg - " + reps);
+        }
+    }
+}
